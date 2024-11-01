@@ -27,7 +27,7 @@ deployment:
     url: turaco-dev-registry.turacocloud.com/dev-turaco-workspace-268/turaco
   image:
     name: post-service-2-pmoeb6ljtf
-    tag: lastest
+    tag: "7993-4609-post-service-2-pmoeb6ljtf-5a47f25"
     secret: regsecret
   container:
     name: post-service-2-pmoeb6ljtf
