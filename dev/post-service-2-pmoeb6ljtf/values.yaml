@@ -1,0 +1,56 @@
+service:
+  port:
+    name: http
+    l4_protocol: TCP
+    port: 8080
+    targetPort: 8080
+  label: post-service-2-pmoeb6ljtf
+  name: post-service-2-pmoeb6ljtf
+  selector: post-service-2-pmoeb6ljtf
+  type:
+  - ClusterIP
+  - NodePort
+namespace: -@namespace@-
+pvc:
+  name: pvc-post-service-2-pmoeb6ljtf
+  storageClass: tlc-block-sc
+  size: 5Gi
+  accessMode: ReadWriteOnce
+deployment:
+  app:
+    name: post-service-2-pmoeb6ljtf
+    type: springboot
+  replicas: -@replicas@-
+  update:
+    type: RollingUpdate
+  repo:
+    url: -@imageRepoName@-
+  image:
+    name: post-service-2-pmoeb6ljtf
+    tag: lastest
+    secret: -@repoSecret@-
+  container:
+    name: post-service-2-pmoeb6ljtf
+    port: 8080
+  volume:
+    name: pvc-post-service-2-pmoeb6ljtf
+  resource:
+    request:
+      memory: -@requestMemory@-
+      cpu: -@requestCpu@-
+    limits:
+      memory: -@limitsMemory@-
+      cpu: -@limitsCpu@-
+  backing: 
+    postgres:
+      name: secret-postgresql-service-1-rbb2xawzto
+  secret:
+    name: []
+  configmap:
+    name: []
+  hpa:
+    name: hpa-post-service-2-pmoeb6ljtf
+    minReplicas: -@minReplicas@-
+    maxReplicas: -@maxReplicas@-
+    cpu: -@cpuAutoScale@-
+    memory: -@memAutoScale@-
