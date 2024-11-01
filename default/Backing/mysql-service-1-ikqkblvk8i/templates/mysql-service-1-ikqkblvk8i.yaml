@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.statefulset.name }}
+  namespace: {{ .Values.namespace }}
+imagePullSecrets:
+  - name: turaco-harbor-registry
+---
+apiVersion: v1
+type: Opaque
+kind: Secret
+metadata:
+  name: {{ .Values.mysql.secret.name }}
+  namespace: {{ .Values.namespace }}
+data:
+  root_password: {{ .Values.mysql.secret.root_password | toString | b64enc | quote }}
+  username: {{ .Values.mysql.secret.username | toString | b64enc | quote }}
+  password: {{ .Values.mysql.secret.password | toString | b64enc | quote }}
+  database: {{ .Values.mysql.secret.database | toString | b64enc | quote }}
+  dbhost: {{ .Values.mysql.secret.dbhost | toString | b64enc | quote }}
+  port: {{ .Values.mysql.secret.port | toString | b64enc | quote }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ default "mysql" .Values.statefulset.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ default "mysql" .Values.statefulset.name }}
+spec:
+  replicas: {{ .Values.statefulset.replicas }}
+  serviceName: {{ default "mysql" .Values.statefulset.spec.servicename }}
+  selector:
+    matchLabels:
+      app: {{ default "mysql" .Values.statefulset.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ default "mysql" .Values.statefulset.name }}
+      annotations:
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "9090"
+        prometheus.io/scheme: "http"
+        prometheus.io/scrape: "true"
+    spec:
+      serviceAccountName: {{ .Values.statefulset.name }}
+      containers:
+        - name: {{ default "mysql" .Values.statefulset.name }}
+          image: {{ .Values.mysql.statefulset.image.url }}
+          resources:
+            requests:
+              memory: {{ .Values.statefulset.resource.request.memory }}
+              cpu: {{ .Values.statefulset.resource.request.cpu }}
+            {{- if and (ne .Values.statefulset.resource.limits.memory "0Mi") (ne .Values.statefulset.resource.limits.memory "0Gi") }}
+            limits:
+              memory: {{ .Values.statefulset.resource.limits.memory }}
+              cpu: {{ .Values.statefulset.resource.limits.cpu }}
+            {{- end }}
+          env:
+          - name: MYSQL_HOST
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.mysql.secret.name }}
+                key: dbhost
+          - name: MYSQL_PORT
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.mysql.secret.name }}
+                key: port
+          - name: MYSQL_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.mysql.secret.name }}
+                key: database
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.mysql.secret.name }}
+                key: username
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.mysql.secret.name }}
+                key: root_password
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.mysql.secret.name }}
+                key: password
+          - name: MYSQL_ROOT_HOST
+            value: '%'
+          ports:
+            - containerPort: {{ default "3306" .Values.statefulset.container.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: {{ .Values.pvc.name }}
+              mountPath: /var/lib/mysql-data/{{ .Values.statefulset.name }}
+            - name: {{ .Values.mysql.configmap.name }}
+              mountPath: /etc/mysql/conf.d/additional.cnf
+              subPath: config
+      volumes:
+        - name: {{ .Values.mysql.configmap.name }}
+          configMap:
+            name: {{ .Values.mysql.configmap.name }}
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ .Values.pvc.name }}
+        annotations:
+          volume.beta.kubernetes.io/storage-class: "{{ .Values.pvc.storageClass }}"
+      spec:
+        accessModes: [ "{{ .Values.pvc.accessMode }}" ]
+        resources:
+          requests:
+            storage: {{ .Values.pvc.size }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: {{ default "none" .Values.service.label }}
+  name: {{ default "none" .Values.service.name }}
+  namespace: {{ default "none" .Values.namespace }}
+spec:
+  ports:
+    - name: {{ .Values.service.port.name }}
+      port: {{ .Values.service.port.port }}
+      targetPort: {{ .Values.service.port.targetPort }}
+      protocol: {{ .Values.service.port.l4_protocol }}
+  type: {{ index .Values.service.type 0 }}
+  selector:
+    app: {{ .Values.service.selector }}

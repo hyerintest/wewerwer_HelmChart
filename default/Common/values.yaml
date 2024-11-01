@@ -1,0 +1,31 @@
+ingress:
+  name: ["ingress-service-1-wydh1lijca"]
+  proxy:
+    bodysize: ["1024M"]
+    rewrite_target: /$2
+  tls:
+    host: -@host@-
+    nrn: 
+    crt: [""]
+    key: [""]
+  secret:
+    name: 
+  rule:
+    host: [null]
+  loadbalancer:
+    address: 
+  limit:
+    connection: [""]
+    rps:
+      type: ["limit-rps"]
+      count: [""]
+  whitelist: [""]
+namespace: -@namespace@-
+secret:
+  name: []
+  registry:
+    name: regsecret
+    url: -@imageRepoName@-
+    username: -@accessKey@-
+    password: -@secretKey@-
+    email: info@twolinecode.com

@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.app.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.app.name }}
+  replicas: {{ .Values.deployment.replicas }}
+  strategy:
+    type: {{ .Values.deployment.update.type }}
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.app.name }}
+        type: {{ .Values.deployment.app.type }}
+      annotations:
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "{{ default "8000" .Values.deployment.container.port }}"
+        prometheus.io/scheme: "http"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+        - name: {{ .Values.deployment.container.name }}
+          image: {{ .Values.deployment.repo.url }}:{{ .Values.deployment.image.tag }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ default "8000" .Values.deployment.container.port }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ default "8000" .Values.deployment.container.port }}
+            initialDelaySeconds: 180
+            periodSeconds: 5
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: {{ default "8000" .Values.deployment.container.port }}
+            initialDelaySeconds: 180
+            periodSeconds: 5
+            timeoutSeconds: 5
+          env:
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.deployment.backing.postgres.name }}
+                  key: dbhost
+            - name: POSTGRES_DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.deployment.backing.postgres.name }}
+                  key: port
+            - name: POSTGRES_DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.deployment.backing.postgres.name }}
+                  key: database
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.deployment.backing.postgres.name }}
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.deployment.backing.postgres.name }}
+                  key: password
+            - name: SERVICE_PATH
+              value: /{{ .Values.namespace }}/api
+
+          envFrom:
+          resources:
+            requests:
+              memory: "{{ default "64Mi" .Values.deployment.resource.request.memory }}"
+              cpu: "{{ default "100m" .Values.deployment.resource.request.cpu }}"
+            {{- if and (ne .Values.deployment.resource.limits.memory "0Mi") (ne .Values.deployment.resource.limits.memory "0Gi") }}
+            limits:
+              memory: "{{ default "64Mi" .Values.deployment.resource.limits.memory }}"
+              cpu: "{{ default "100m" .Values.deployment.resource.limits.cpu }}"
+            {{- end }}
+          volumeMounts:
+            - name: {{ .Values.deployment.volume.name }}
+              mountPath: /logs
+
+      volumes:
+        - name: {{ .Values.deployment.volume.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.pvc.name }}
+
+      imagePullSecrets:
+        - name: {{ .Values.deployment.image.secret }}
