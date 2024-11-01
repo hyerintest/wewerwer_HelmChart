@@ -10,7 +10,7 @@ service:
   type:
   - ClusterIP
   - NodePort
-namespace: -@namespace@-
+namespace: wewerwer-dev
 pvc:
   name: pvc-post-service-2-pmoeb6ljtf
   storageClass: tlc-block-sc
@@ -20,15 +20,15 @@ deployment:
   app:
     name: post-service-2-pmoeb6ljtf
     type: springboot
-  replicas: -@replicas@-
+  replicas: 1
   update:
     type: RollingUpdate
   repo:
-    url: -@imageRepoName@-
+    url: turaco-dev-registry.turacocloud.com/dev-turaco-workspace-268/turaco
   image:
     name: post-service-2-pmoeb6ljtf
     tag: lastest
-    secret: -@repoSecret@-
+    secret: regsecret
   container:
     name: post-service-2-pmoeb6ljtf
     port: 8080
@@ -36,11 +36,11 @@ deployment:
     name: pvc-post-service-2-pmoeb6ljtf
   resource:
     request:
-      memory: -@requestMemory@-
-      cpu: -@requestCpu@-
+      memory: 250Mi
+      cpu: 0.25
     limits:
-      memory: -@limitsMemory@-
-      cpu: -@limitsCpu@-
+      memory: 0Mi
+      cpu: 0
   backing: 
     postgres:
       name: secret-postgresql-service-1-rbb2xawzto
@@ -50,7 +50,7 @@ deployment:
     name: []
   hpa:
     name: hpa-post-service-2-pmoeb6ljtf
-    minReplicas: -@minReplicas@-
-    maxReplicas: -@maxReplicas@-
-    cpu: -@cpuAutoScale@-
+    minReplicas: 1
+    maxReplicas: 1
+    cpu: 70
     memory: -@memAutoScale@-

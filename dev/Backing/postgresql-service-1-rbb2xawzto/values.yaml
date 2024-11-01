@@ -15,7 +15,7 @@ statefulset:
   spec:
     name: postgresql-service-1-rbb2xawzto
     servicename: postgresql-service-1-rbb2xawzto
-  replicas: -@replicas@-
+  replicas: 1
   container:
     name: postgresql-service-1-rbb2xawzto
     port: 5432
@@ -23,25 +23,25 @@ statefulset:
     name: pvc-postgresql-service-1-rbb2xawzto
   resource:
     request:
-      memory: -@requestMemory@-
-      cpu: -@requestCpu@-
+      memory: 250Mi
+      cpu: 0.25
     limits:
-      memory: -@limitsMemory@-
-      cpu: -@limitsCpu@-
+      memory: 0Mi
+      cpu: 0
   hpa:
     name: hpa-postgresql-service-1-rbb2xawzto
-    minReplicas: -@minReplicas@-
-    maxReplicas: -@maxReplicas@-
-    cpu: -@cpuAutoScale@-
+    minReplicas: 1
+    maxReplicas: 1
+    cpu: 70
     memory: -@memAutoScale@-
-namespace: -@namespace@-
+namespace: wewerwer-dev
 secret:
   name: 
   registry:
     name: regsecret
-    url: -@imageRepoName@-
-    username: -@accessKey@-
-    password: -@secretKey@-
+    url: turaco-dev-registry.turacocloud.com/dev-turaco-workspace-268/turaco
+    username: robot$turaco_common
+    password: Zv7beYWhgCQSOUoxZQK1RGWHdvAMltXx
     email: info@twolinecode.com
 pvc:
   name: pvc-postgresql-service-1-rbb2xawzto

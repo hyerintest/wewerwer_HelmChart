@@ -4,7 +4,7 @@ ingress:
     bodysize: ["1024M"]
     rewrite_target: /$2
   tls:
-    host: -@host@-
+    host: 
     nrn: 
     crt: [""]
     key: [""]
@@ -20,12 +20,12 @@ ingress:
       type: ["limit-rps"]
       count: [""]
   whitelist: [""]
-namespace: -@namespace@-
+namespace: wewerwer-dev
 secret:
   name: []
   registry:
     name: regsecret
-    url: -@imageRepoName@-
-    username: -@accessKey@-
-    password: -@secretKey@-
+    url: turaco-dev-registry.turacocloud.com/dev-turaco-workspace-268/turaco
+    username: robot$turaco_common
+    password: Zv7beYWhgCQSOUoxZQK1RGWHdvAMltXx
     email: info@twolinecode.com

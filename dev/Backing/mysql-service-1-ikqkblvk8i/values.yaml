@@ -15,7 +15,7 @@ statefulset:
   spec:
     name: mysql-service-1-ikqkblvk8i
     servicename: mysql-service-1-ikqkblvk8i
-  replicas: -@replicas@-
+  replicas: 1
   container:
     name: mysql-service-1-ikqkblvk8i
     port: 3306
@@ -23,18 +23,18 @@ statefulset:
     name: pvc-mysql-service-1-ikqkblvk8i
   resource:
     request:
-      memory: -@requestMemory@-
-      cpu: -@requestCpu@-
+      memory: 250Mi
+      cpu: 0.25
     limits:
-      memory: -@limitsMemory@-
-      cpu: -@limitsCpu@-
+      memory: 0Mi
+      cpu: 0
   hpa:
     name: hpa-mysql-service-1-ikqkblvk8i
-    minReplicas: -@minReplicas@-
-    maxReplicas: -@maxReplicas@-
-    cpu: -@cpuAutoScale@-
+    minReplicas: 1
+    maxReplicas: 1
+    cpu: 70
     memory: -@memAutoScale@-
-namespace: -@namespace@-
+namespace: wewerwer-dev
 mysql:
   configmap:
     name: config-mysql-service-1-ikqkblvk8i
@@ -54,9 +54,9 @@ secret:
   name: 
   registry:
     name: regsecret
-    url: -@imageRepoName@-
-    username: -@accessKey@-
-    password: -@secretKey@-
+    url: turaco-dev-registry.turacocloud.com/dev-turaco-workspace-268/turaco
+    username: robot$turaco_common
+    password: Zv7beYWhgCQSOUoxZQK1RGWHdvAMltXx
     email: info@twolinecode.com
 pvc:
   name: pvc-mysql-service-1-ikqkblvk8i
